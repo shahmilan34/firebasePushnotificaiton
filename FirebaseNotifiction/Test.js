@@ -8,8 +8,8 @@
 
 import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, View, Alert} from 'react-native';
-import firebase from 'react-native-firebase';
 import AsyncStorage from '@react-native-community/async-storage';
+import firebase from 'react-native-firebase';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -19,7 +19,7 @@ const instructions = Platform.select({
 });
 
 type Props = {};
-export default class App extends Component<Props> {
+export default class Test extends Component<Props> {
 
   async componentDidMount() {
     this.checkPermission();
@@ -104,6 +104,7 @@ export default class App extends Component<Props> {
     this.notificationOpenedListener = firebase.notifications().onNotificationOpened((notificationOpen) => {
       const { title, body } = notificationOpen.notification;
       console.log('onNotificationOpened:');
+      console.log(notificationOpen.notification)
       Alert.alert(title, body)
     });
 
@@ -121,6 +122,7 @@ export default class App extends Component<Props> {
     * */
     this.messageListener = firebase.messaging().onMessage((message) => {
       //process data message
+      console.log('onMessage 124')
       console.log("JSON.stringify:", JSON.stringify(message));
     });
   }
