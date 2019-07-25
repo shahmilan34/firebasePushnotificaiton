@@ -29,6 +29,7 @@ export default class App extends Component<Props> {
   componentWillUnmount() {
     this.notificationListener;
     this.notificationOpenedListener;
+    this.messageListener;
   }
 
   //1
@@ -74,23 +75,24 @@ export default class App extends Component<Props> {
     this.notificationListener = firebase.notifications().onNotification((notification) => {
       const { title, body } = notification;
       console.log('onNotification:');
-      
-        const localNotification = new firebase.notifications.Notification({
-          sound: 'sampleaudio',
-          show_in_foreground: true,
-        })
-        .setSound('sampleaudio.wav')
-        .setNotificationId(notification.notificationId)
-        .setTitle(notification.title)
-        .setBody(notification.body)
-        .android.setChannelId('fcm_FirebaseNotifiction_default_channel') // e.g. the id you chose above
-        .android.setSmallIcon('@drawable/ic_launcher') // create this icon in Android Studio
-        .android.setColor('#000000') // you can set a color here
-        .android.setPriority(firebase.notifications.Android.Priority.High);
+      this.custom_data = notification.data;
+     
+      const localNotification = new firebase.notifications.Notification({
+        sound: 'sampleaudio',
+        show_in_foreground: true,
+      })
+      .setSound('sampleaudio.wav')
+      .setNotificationId(notification.notificationId)
+      .setTitle(notification.title)
+      .setBody(notification.body)
+      .android.setChannelId('fcm_FirebaseNotifiction_default_channel') // e.g. the id you chose above
+      .android.setSmallIcon('@drawable/ic_launcher') // create this icon in Android Studio
+      .android.setColor('#000000') // you can set a color here
+      .android.setPriority(firebase.notifications.Android.Priority.High);
 
-        firebase.notifications()
-          .displayNotification(localNotification)
-          .catch(err => console.error(err));
+      firebase.notifications()
+        .displayNotification(localNotification)
+        .catch(err => console.error(err));
     });
 
     const channel = new firebase.notifications.Android.Channel('fcm_FirebaseNotifiction_default_channel', 'Demo app name', firebase.notifications.Android.Importance.High)
@@ -99,12 +101,16 @@ export default class App extends Component<Props> {
     firebase.notifications().android.createChannel(channel);
 
     /*
-    * If your app is in background, you can listen for when a notification is clicked / tapped / opened as follows:
+    * If your app is in foreground and background, you can listen for when a notification is clicked / tapped / opened as follows:
     * */
     this.notificationOpenedListener = firebase.notifications().onNotificationOpened((notificationOpen) => {
-      const { title, body } = notificationOpen.notification;
-      console.log('onNotificationOpened:');
-      Alert.alert(title, body)
+      if ("title" in notificationOpen.notification.data){
+        const { title, body } = notificationOpen.notification.data;
+        Alert.alert(title, body);
+      }else{
+        const { title, body } = this.custom_data;
+        Alert.alert(title, body);
+      }
     });
 
     /*
@@ -112,8 +118,7 @@ export default class App extends Component<Props> {
     * */
     const notificationOpen = await firebase.notifications().getInitialNotification();
     if (notificationOpen) {
-      const { title, body } = notificationOpen.notification;
-      console.log('getInitialNotification:');
+      const { title, body } = notificationOpen.notification.data;
       Alert.alert(title, body)
     }
     /*
